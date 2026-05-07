@@ -172,23 +172,39 @@ morpheus-cam/
 
 ## Built on top of
 
+This repository **does not redistribute** any third-party model weights, SDK binaries, or proprietary files. `download_models.py` fetches public weights from their original hosts; the SD Turbo NPU bundle and the AMD Ryzen AI SDK are obtained by the user from AMD / Hugging Face under their own terms. Each component below is independently licensed by its authors:
+
 - **[TAESD](https://github.com/madebyollin/taesd)** by [@madebyollin](https://github.com/madebyollin) — MIT. Drop-in for the SD VAE decoder, ~30× faster.
-- **[Depth Anything V2](https://github.com/DepthAnything/Depth-Anything-V2)** — Apache 2.0. Small FP16 export, ~30 ms on iGPU.
-- **[Practical-RIFE](https://github.com/hzwer/Practical-RIFE)** by [@hzwer](https://github.com/hzwer) — MIT (architecture). IFNet_HDv3 v4.6 weights.
-- **[Stable Diffusion Turbo](https://huggingface.co/stabilityai/sd-turbo)** by Stability AI — Stability AI Community License (research / non-commercial).
-- **[Ryzen AI Software 1.7.1](https://www.amd.com/en/developer/resources/ryzen-ai-software.html)** by AMD — VitisAI EP, GenAI-SD, `vaiml_compile_v4`.
-- **[Spout](https://github.com/leadedge/Spout2)** by [@leadedge](https://github.com/leadedge) — BSD-2. Wrapped via [`UnveilStudio/SPOUT2ForPython`](https://github.com/UnveilStudio/SPOUT2ForPython).
+- **[Depth Anything V2 (small)](https://github.com/DepthAnything/Depth-Anything-V2)** — code Apache 2.0; the small variant's weights are released under Apache 2.0 (the base/large variants are CC-BY-NC-4.0 and are **not** used here).
+- **[Practical-RIFE](https://github.com/hzwer/Practical-RIFE)** by [@hzwer](https://github.com/hzwer) — code MIT; the pretrained `IFNet_HDv3` weights are released for **non-commercial** use only by the authors. Commercial users must contact the original authors.
+- **[Stable Diffusion Turbo](https://huggingface.co/stabilityai/sd-turbo)** by Stability AI — [Stability AI Community License Agreement](https://stability.ai/community-license-agreement). Free for non-commercial use, and free for commercial use by entities or individuals with **less than $1M USD in annual revenue**; an Enterprise License is required above that threshold. Read and accept the licence directly with Stability AI before using the weights — it's your responsibility, not this repo's.
+- **[Ryzen AI Software 1.7.1](https://www.amd.com/en/developer/resources/ryzen-ai-software.html)** by AMD — VitisAI EP, GenAI-SD, `vaiml_compile_v4`. Distributed by AMD under the AMD Software EULA; **not** redistributed here.
+- **[Spout](https://github.com/leadedge/Spout2)** by [@leadedge](https://github.com/leadedge) — BSD-2-Clause. Wrapped via [`UnveilStudio/SPOUT2ForPython`](https://github.com/UnveilStudio/SPOUT2ForPython) which bundles `SpoutLibrary.dll` under BSD-2.
+
+> ⚠️ **You are responsible** for complying with the licence of every model and SDK you download through `morpheus-cam`. We provide orchestration code only.
 
 ## Support
 
-If `morpheus-cam` saves you time, throw a beer at the maintainer:
+If the **MIT-licensed code in this repository** saves you time, you can support its maintenance:
 
 - 🟧 **Patreon** — [patreon.com/unveil_studio](https://www.patreon.com/unveil_studio)
 - 💸 **PayPal** — [paypal.me/Unveilstudio](https://paypal.me/Unveilstudio)
 
-## License
+These contributions support development of the orchestration code only. They are **not** payment for, or a sublicense of, any third-party model, SDK, or weights — those remain governed by their respective authors' licences (see *Built on top of* above).
 
-**MIT** — see [`LICENSE`](LICENSE). Third-party weights/SDKs keep their own licences (TAESD MIT, Depth Anything Apache 2.0, RIFE MIT/non-commercial, SD Turbo Stability Community, AMD SDK files **not** redistributed, Spout BSD-2). NDI is not used here — for NDI output see [`NDIForPython`](https://github.com/UnveilStudio/NDIForPython).
+## License & disclaimers
+
+The code in this repository is released under the **MIT License** — see [`LICENSE`](LICENSE). The MIT licence applies **only** to the source files authored by Unveil Studio in this repo. Third-party components are governed by their own licences as listed in the *Built on top of* section.
+
+**No redistribution of third-party assets.** This repo does not contain, mirror, or redistribute any model weights, SDK binaries, proprietary headers, or vendor-supplied files. Where weights are needed, the user downloads them directly from the original publisher and accepts that publisher's licence terms.
+
+**Trademarks.** AMD, Ryzen, Radeon, XDNA, and Ryzen AI are trademarks of Advanced Micro Devices, Inc. NVIDIA, CUDA, and GeForce RTX are trademarks of NVIDIA Corporation. Razer and Razer Blade are trademarks of Razer Inc. Stable Diffusion and SD Turbo are trademarks or product names of Stability AI Ltd. Spout is © Lynn Jarvis. TouchDesigner is a trademark of Derivative Inc. All other trademarks are the property of their respective owners. Names are used here in their nominative sense only, to identify the hardware and software this project interoperates with.
+
+**No endorsement / no affiliation.** Unveil Studio is **not** affiliated with, endorsed by, sponsored by, or otherwise connected to AMD, NVIDIA, Razer, Stability AI, Hugging Face, Derivative, or any other party named in this repository. References are descriptive only.
+
+**No warranty.** This software is provided "as is", without warranty of any kind, express or implied, as set out in the MIT licence. Generative models can produce unexpected, biased, or otherwise unwanted output; you are responsible for what you generate and how you use it.
+
+NDI is not used in this project — for NDI output see [`NDIForPython`](https://github.com/UnveilStudio/NDIForPython).
 
 ## The Unveil Studio family
 
