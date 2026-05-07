@@ -1,0 +1,34 @@
+{
+  "_comment": "Reference results from our test bench. Verified 2026-04-20. Latency numbers will differ on your machine; the NaN/total ratios should match.",
+  "test_bench": {
+    "machine":        "Razer Blade 14 (2025)",
+    "cpu":            "AMD Ryzen AI 9 365",
+    "npu":            "AMD XDNA2 (~50 TOPS)",
+    "ryzen_ai":       "1.7.1",
+    "vaip_config":    "voe-4.0-win_amd64/vaip_config.json",
+    "windows":        "Windows 11"
+  },
+  "00_demonstrate_strobe_int8": {
+    "model":          "SD Turbo UNet INT8 (GenAI-SD reference, AMD custom ops)",
+    "input":          "bit-identical, seed 42, sample (1,4,64,64) fp32",
+    "cycles_per_sleep_level": 10,
+    "sleep_levels_tested_seconds": [1.0, 0.5, 0.25, 0.1, 0.05, 0.025, 0.01, 0.005, 0.0],
+    "observation":    "~50/50 NaN/clean alternation at every sleep level",
+    "interpretation": "deterministic per call parity, not a timing race"
+  },
+  "01_verify_fix_fp32": {
+    "model":          "SD Turbo UNet fp32 (raw export, no replaced custom ops)",
+    "input":          "bit-identical, seed 42, sample (1,4,64,64) fp32",
+    "n_calls":        20,
+    "nan_count":      0,
+    "pattern":        "....................",
+    "avg_latency_ms": 250,
+    "compile_path":   "vaiml_compile_v4 (VitisAIExecutionProvider)"
+  },
+  "summary": {
+    "int8_strobe_observed":     true,
+    "int8_strobe_timing_dependent": false,
+    "fp32_vaiml_path_clean":    true,
+    "shipping_choice":          "fp32 + vaiml_compile_v4 (3-5x latency vs INT8, zero corrupted frames)"
+  }
+}

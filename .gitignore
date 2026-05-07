@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models — bring your own (never committed). See README + download_models.py.
+models/
+
+# Runtime / state
+_ui_state.json
+*.log
+*.lock
+
+# Build artifacts (Spout DLL local copies, etc.)
+*.dll
+SpoutLibrary*.dll
+
+# Banner regenerable from build_banner.py — but keep banner.png checked in
+# so the README renders on a fresh clone. Uncomment to regenerate-only:
+# assets/banner.png

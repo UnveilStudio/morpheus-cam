@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UNVEIL · MORPHEUS-CAM · v1</title>
+<style>
+  :root {
+    --bg-0:     #0a0a0f;
+    --bg-1:     #13131a;
+    --bg-2:     #1a1a23;
+    --line:     rgba(168,85,247,0.15);
+    --line-2:   rgba(255,255,255,0.05);
+    --text-0:   #f5f5f7;
+    --text-1:   #b4b4c0;
+    --text-2:   #6c6c7a;
+    --text-3:   #3f3f4a;
+    --accent:       #a855f7;
+    --accent-soft:  rgba(168,85,247,0.18);
+    --accent-glow:  rgba(168,85,247,0.45);
+    --green:    #4ade80;
+    --red:      #ef4444;
+    --bar-cpu:  #5b8def;
+    --bar-igpu: #6ea3c7;
+    --bar-dgpu: #76b889;
+    --bar-ram:  #8a8a99;
+    --mono:     ui-monospace, "JetBrains Mono", "SF Mono", "Cascadia Code", Consolas, monospace;
+    --sans:     -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+
+  body {
+    background: var(--bg-0);
+    color: var(--text-0);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.4;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ── Top bar ── */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 18px 24px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .brand-logo {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--text-0);
+  }
+
+  .brand-logo .dim { color: var(--text-2); font-weight: 400; }
+  .brand-logo .accent { color: var(--accent); }
+
+  .brand-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.05em;
+  }
+
+  .top-meta {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* ── Main grid ── */
+  main {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    padding: 14px 24px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 980px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--bg-1);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    min-height: 220px;
+  }
+
+  .card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--text-2);
+    text-transform: uppercase;
+    padding-bottom: 10px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--line-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-title .badge {
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 2px;
+    padding: 1px 6px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+
+  /* ── Pipeline readouts ── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 7px 0;
+    border-bottom: 1px solid var(--line-2);
+    align-items: baseline;
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-0);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .stat-unit {
+    color: var(--text-2);
+    font-size: 11px;
+    margin-left: 4px;
+    font-weight: 400;
+  }
+
+  .stat-row.hero {
+    padding: 12px 0;
+  }
+
+  .stat-row.hero .stat-value {
+    font-size: 22px;
+    font-weight: 500;
+  }
+
+  .stat-row.hero .stat-value.accent {
+    color: var(--accent);
+  }
+
+  /* ── Hardware bars ── */
+  .hw-bar {
+    display: grid;
+    grid-template-columns: 60px 1fr 60px;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+
+  .hw-bar .hw-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-1);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .hw-bar .hw-track {
+    position: relative;
+    height: 8px;
+    background: var(--bg-2);
+    border-radius: 1px;
+    overflow: hidden;
+  }
+
+  .hw-bar .hw-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 0%;
+    background: var(--bar-cpu);
+    border-radius: 1px;
+    transition: width 0.3s ease-out;
+  }
+
+  .hw-bar.npu .hw-fill   { background: var(--accent); box-shadow: 0 0 8px var(--accent-soft); }
+  .hw-bar.cpu .hw-fill   { background: var(--bar-cpu); }
+  .hw-bar.igpu .hw-fill  { background: var(--bar-igpu); }
+  .hw-bar.dgpu .hw-fill  { background: var(--bar-dgpu); }
+  .hw-bar.ram .hw-fill   { background: var(--bar-ram); }
+
+  .hw-bar .hw-readout {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-0);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hw-bar .hw-readout small {
+    color: var(--text-2);
+    font-size: 9px;
+  }
+
+  .dgpu-meta {
+    grid-column: 2 / 4;
+    margin-top: -6px;
+    margin-bottom: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .derived-mark {
+    color: var(--text-3);
+    font-size: 9px;
+    margin-left: 4px;
+  }
+
+  /* ── Controls ── */
+  .ctl {
+    margin-bottom: 14px;
+  }
+
+  .ctl-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  select {
+    width: 100%;
+    background: var(--bg-2);
+    color: var(--text-0);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 7px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='none' stroke='%23a855f7' stroke-width='1.4' d='M2 4l3 3 3-3'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+
+  .slider-wrap {
+    display: grid;
+    grid-template-columns: 1fr 50px;
+    gap: 10px;
+    align-items: center;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: var(--bg-2);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-1);
+    cursor: pointer;
+    box-shadow: 0 0 0 1px var(--line);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--bg-1);
+    cursor: pointer;
+  }
+
+  .slider-readout {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-0);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .toggle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .toggle-btn {
+    background: transparent;
+    color: var(--text-1);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 9px 0;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toggle-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #ffffff;
+    box-shadow: 0 0 12px var(--accent-soft);
+  }
+  .toggle-btn.stop-btn {
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #ef4444;
+  }
+  .toggle-btn.stop-btn:hover {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    color: #ef4444;
+    box-shadow: 0 0 12px rgba(239, 68, 68, 0.25);
+  }
+  .toggle-btn.apply-btn { padding: 6px 18px; }
+
+  /* ── Prompt textarea ── */
+  textarea#ctl-prompt {
+    width: 100%;
+    min-height: 64px;
+    padding: 10px 12px;
+    background: var(--bg-2);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    color: var(--text-1);
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.45;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  textarea#ctl-prompt:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .prompt-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    gap: 12px;
+  }
+  .prompt-hint {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--text-3);
+    letter-spacing: 0.05em;
+  }
+  .prompt-hint.dirty { color: var(--accent); }
+
+  /* ── Signal viz ── */
+  .signal-card {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+
+  .signal-canvas {
+    display: block;
+    width: 100%;
+    height: 140px;
+    background: var(--bg-2);
+    border: 1px solid var(--line-2);
+    border-radius: 3px;
+  }
+
+  .signal-legend {
+    display: flex;
+    gap: 18px;
+    margin-top: 10px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.06em;
+  }
+
+  .signal-legend .swatch {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    vertical-align: middle;
+    border-radius: 50%;
+  }
+
+  /* ── Status bar ── */
+  .statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 24px;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-2);
+    letter-spacing: 0.1em;
+  }
+
+  .conn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .conn .dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--red);
+  }
+  .conn.ok .dot { background: var(--green); box-shadow: 0 0 6px var(--green); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-logo">
+      <span>UNVEIL</span>
+      <span class="dim"> · </span>
+      <span class="accent">MORPHEUS-CAM</span>
+      <span class="dim"> · v1</span>
+    </div>
+    <div class="brand-tag">Real-time body-driven Stable Diffusion · NPU + iGPU + CUDA</div>
+  </div>
+  <div class="top-meta">
+    <span id="topUptime">00:00</span>
+    <span class="conn" id="connWrap"><span class="dot"></span><span id="connText">disconnected</span></span>
+  </div>
+</div>
+
+<main>
+
+  <!-- ── Pipeline ── -->
+  <section class="card">
+    <div class="card-title">Pipeline <span class="badge">SD TURBO</span></div>
+    <div class="stat-row hero">
+      <span class="stat-label">d_mean</span>
+      <span class="stat-value accent" id="v-d_mean">0.000</span>
+    </div>
+    <div class="stat-row hero">
+      <span class="stat-label">SD fps</span>
+      <span class="stat-value" id="v-sd_fps">0.00</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">ms / step</span>
+      <span class="stat-value" id="v-ms_step">0<span class="stat-unit">ms</span></span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">cycle</span>
+      <span class="stat-value" id="v-cycle">0</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">cam_fid</span>
+      <span class="stat-value" id="v-cam_fid">0</span>
+    </div>
+  </section>
+
+  <!-- ── Hardware ── -->
+  <section class="card">
+    <div class="card-title">Hardware <span class="badge">UTIL</span></div>
+
+    <div class="hw-bar npu">
+      <span class="hw-label">NPU</span>
+      <div class="hw-track"><div class="hw-fill" id="bar-npu"></div></div>
+      <span class="hw-readout"><span id="v-npu_pct">0.0</span>%<span class="derived-mark" id="v-npu_mark">~</span></span>
+    </div>
+
+    <div class="hw-bar igpu">
+      <span class="hw-label">iGPU</span>
+      <div class="hw-track"><div class="hw-fill" id="bar-igpu"></div></div>
+      <span class="hw-readout"><span id="v-igpu_pct">0.0</span>%</span>
+    </div>
+
+    <div class="hw-bar dgpu">
+      <span class="hw-label">dGPU</span>
+      <div class="hw-track"><div class="hw-fill" id="bar-dgpu"></div></div>
+      <span class="hw-readout"><span id="v-dgpu_pct">0.0</span>%</span>
+    </div>
+    <div class="dgpu-meta">
+      <span id="v-dgpu_temp">0</span>°C&nbsp;·&nbsp;<span id="v-dgpu_power">0</span> W
+    </div>
+
+    <div class="hw-bar cpu">
+      <span class="hw-label">CPU</span>
+      <div class="hw-track"><div class="hw-fill" id="bar-cpu"></div></div>
+      <span class="hw-readout"><span id="v-cpu_pct">0.0</span>%</span>
+    </div>
+
+    <div class="hw-bar ram">
+      <span class="hw-label">RAM</span>
+      <div class="hw-track"><div class="hw-fill" id="bar-ram"></div></div>
+      <span class="hw-readout"><span id="v-ram_pct">0.0</span>%</span>
+    </div>
+  </section>
+
+  <!-- ── Controls ── -->
+  <section class="card">
+    <div class="card-title">Controls <span class="badge">LIVE</span></div>
+
+    <div class="ctl">
+      <div class="ctl-label">Prompt</div>
+      <textarea id="ctl-prompt" rows="3" placeholder="describe what you want SD to dream…"></textarea>
+      <div class="prompt-row">
+        <span class="prompt-hint" id="prompt-dirty"></span>
+        <button class="toggle-btn apply-btn" id="ctl-prompt-apply">Apply</button>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="ctl-label">Cam mix</div>
+      <div class="slider-wrap">
+        <input type="range" id="ctl-cam_mix" min="0" max="100" step="1" value="30" />
+        <span class="slider-readout"><span id="v-cam_mix">30</span>%</span>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="ctl-label">Noise α</div>
+      <div class="slider-wrap">
+        <input type="range" id="ctl-noise_a" min="0" max="100" step="1" value="30" />
+        <span class="slider-readout"><span id="v-noise_a">30</span>%</span>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="ctl-label">Depth gain</div>
+      <div class="slider-wrap">
+        <input type="range" id="ctl-depth_g" min="0" max="150" step="1" value="60" />
+        <span class="slider-readout"><span id="v-depth_g">60</span>%</span>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="ctl-label">Modulation</div>
+      <div class="toggle-row">
+        <button class="toggle-btn" id="ctl-evolve">Evolve</button>
+        <button class="toggle-btn" id="ctl-alternance">Alternance</button>
+      </div>
+    </div>
+
+    <div class="ctl">
+      <div class="ctl-label">Preview</div>
+      <div class="toggle-row">
+        <button class="toggle-btn" id="ctl-cv2_preview">cv2 window</button>
+        <button class="toggle-btn stop-btn" id="ctl-stop">Stop</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Signal viz ── -->
+  <section class="card signal-card">
+    <div class="card-title">Body interaction · last 60s <span class="badge">d_mean</span></div>
+    <canvas id="sig" class="signal-canvas"></canvas>
+    <div class="signal-legend">
+      <span><span class="swatch" style="background:var(--accent);box-shadow:0 0 8px var(--accent-glow);"></span>d_mean</span>
+      <span><span class="swatch" style="background:var(--bar-igpu);"></span>SD fps / 10</span>
+      <span><span class="swatch" style="background:var(--text-3);"></span>ms_step / 1000</span>
+    </div>
+  </section>
+
+</main>
+
+<div class="statusbar">
+  <span>UNVEIL STUDIO · MORPHEUS-CAM · v1</span>
+  <span>uptime <span id="uptime">00:00</span></span>
+</div>
+
+<script>
+(function() {
+  const $ = (id) => document.getElementById(id);
+
+  // ── State ──
+  let local = { prompt_text: "", cam_mix: 30, noise_a: 30, depth_g: 60, evolve: true, alternance: false, cv2_preview: false };
+  let bootedAt = Date.now();
+
+  // sample buffer for the signal canvas (10 Hz × 60s = 600 samples)
+  const N = 600;
+  const buf = {
+    d_mean: new Float32Array(N),
+    sd_fps: new Float32Array(N),
+    ms_step: new Float32Array(N),
+  };
+  let head = 0;
+  let last = { d_mean: 0, sd_fps: 0, ms_step: 0 };
+
+  // ── WebSocket ──
+  let ws = null;
+  let backoff = 500;
+
+  function connect() {
+    const wsPort = (parseInt(location.port, 10) || 54331) + 1;
+    const url = `ws://${location.hostname}:${wsPort}/`;
+    ws = new WebSocket(url);
+    ws.onopen = () => {
+      backoff = 500;
+      const w = $("connWrap");
+      w.classList.add("ok");
+      $("connText").textContent = "connected";
+    };
+    ws.onclose = () => {
+      const w = $("connWrap");
+      w.classList.remove("ok");
+      $("connText").textContent = "reconnecting";
+      setTimeout(connect, backoff);
+      backoff = Math.min(8000, backoff * 1.5);
+    };
+    ws.onerror = () => { try { ws.close(); } catch(_){} };
+    ws.onmessage = (e) => {
+      let msg; try { msg = JSON.parse(e.data); } catch(_) { return; }
+      if (msg.type === "state") onState(msg.data);
+      else if (msg.type === "update") onUpdate(msg.name, msg.value);
+      else if (msg.type === "metrics") onMetrics(msg.data);
+    };
+  }
+
+  function send(name, value) {
+    if (ws && ws.readyState === 1) ws.send(JSON.stringify({ name, value }));
+  }
+
+  // ── Initial state ──
+  function onState(d) {
+    ["prompt_text", "cam_mix", "noise_a", "depth_g", "evolve", "alternance", "cv2_preview"].forEach(k => {
+      if (k in d) onUpdate(k, d[k]);
+    });
+    onMetrics(d);
+  }
+
+  function onUpdate(name, value) {
+    local[name] = value;
+    if (name === "prompt_text") {
+      const ta = $("ctl-prompt");
+      if (document.activeElement !== ta) ta.value = String(value || "");
+      markPromptClean();
+    }
+    else if (name === "cam_mix") {
+      $("ctl-cam_mix").value = String(value);
+      $("v-cam_mix").textContent = value;
+    }
+    else if (name === "noise_a") {
+      $("ctl-noise_a").value = String(value);
+      $("v-noise_a").textContent = value;
+    }
+    else if (name === "depth_g") {
+      $("ctl-depth_g").value = String(value);
+      $("v-depth_g").textContent = value;
+    }
+    else if (name === "evolve") $("ctl-evolve").classList.toggle("active", !!value);
+    else if (name === "alternance") $("ctl-alternance").classList.toggle("active", !!value);
+    else if (name === "cv2_preview") $("ctl-cv2_preview").classList.toggle("active", !!value);
+  }
+
+  function onMetrics(d) {
+    if ("cycle"     in d) $("v-cycle").textContent = d.cycle | 0;
+    if ("sd_fps"    in d) { $("v-sd_fps").textContent = (+d.sd_fps).toFixed(2); last.sd_fps = +d.sd_fps; }
+    if ("ms_step"   in d) { $("v-ms_step").firstChild && ($("v-ms_step").innerHTML = `${(+d.ms_step).toFixed(0)}<span class="stat-unit">ms</span>`); last.ms_step = +d.ms_step; }
+    if ("cam_fid"   in d) $("v-cam_fid").textContent = d.cam_fid | 0;
+    if ("d_mean"    in d) { $("v-d_mean").textContent = (+d.d_mean).toFixed(3); last.d_mean = +d.d_mean; }
+
+    if ("cpu_pct"   in d) setBar("cpu",  d.cpu_pct);
+    if ("ram_pct"   in d) setBar("ram",  d.ram_pct);
+    if ("igpu_pct"  in d) setBar("igpu", d.igpu_pct);
+    if ("dgpu_pct"  in d) setBar("dgpu", d.dgpu_pct);
+    if ("npu_pct"   in d) setBar("npu",  d.npu_pct);
+    if ("npu_derived" in d) {
+      $("v-npu_mark").textContent = d.npu_derived ? "~" : "";
+      $("v-npu_mark").title = d.npu_derived ? "derived from ms_step (perfmon NPU 0 not exposed)" : "";
+    }
+    if ("dgpu_temp"  in d) $("v-dgpu_temp").textContent = (+d.dgpu_temp).toFixed(0);
+    if ("dgpu_power" in d) $("v-dgpu_power").textContent = (+d.dgpu_power).toFixed(0);
+  }
+
+  function setBar(kind, pct) {
+    const v = Math.max(0, Math.min(100, +pct));
+    $(`bar-${kind}`).style.width = v + "%";
+    $(`v-${kind}_pct`).textContent = v.toFixed(1);
+  }
+
+  // ── Controls ──
+  function markPromptDirty() {
+    $("prompt-dirty").textContent = "modified · click apply";
+    $("prompt-dirty").classList.add("dirty");
+  }
+  function markPromptClean() {
+    $("prompt-dirty").textContent = "";
+    $("prompt-dirty").classList.remove("dirty");
+  }
+  function applyPrompt() {
+    const v = $("ctl-prompt").value.trim();
+    if (!v || v === local.prompt_text) return;
+    local.prompt_text = v;
+    send("prompt_text", v);
+    markPromptClean();
+  }
+
+  $("ctl-prompt").addEventListener("input", () => {
+    if ($("ctl-prompt").value.trim() !== local.prompt_text) markPromptDirty();
+    else markPromptClean();
+  });
+  $("ctl-prompt").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      applyPrompt();
+    }
+  });
+  $("ctl-prompt-apply").addEventListener("click", applyPrompt);
+
+  $("ctl-cam_mix").addEventListener("input", (e) => {
+    const v = parseInt(e.target.value, 10);
+    local.cam_mix = v;
+    $("v-cam_mix").textContent = v;
+    send("cam_mix", v);
+  });
+
+  $("ctl-noise_a").addEventListener("input", (e) => {
+    const v = parseInt(e.target.value, 10);
+    local.noise_a = v;
+    $("v-noise_a").textContent = v;
+    send("noise_a", v);
+  });
+
+  $("ctl-depth_g").addEventListener("input", (e) => {
+    const v = parseInt(e.target.value, 10);
+    local.depth_g = v;
+    $("v-depth_g").textContent = v;
+    send("depth_g", v);
+  });
+
+  $("ctl-cv2_preview").addEventListener("click", () => {
+    const v = !local.cv2_preview;
+    local.cv2_preview = v;
+    $("ctl-cv2_preview").classList.toggle("active", v);
+    send("cv2_preview", v);
+  });
+
+  $("ctl-stop").addEventListener("click", () => {
+    if (!confirm("Stop the pipeline?")) return;
+    send("running", false);
+  });
+
+  $("ctl-evolve").addEventListener("click", () => {
+    const v = !local.evolve;
+    local.evolve = v;
+    $("ctl-evolve").classList.toggle("active", v);
+    send("evolve", v);
+  });
+
+  $("ctl-alternance").addEventListener("click", () => {
+    const v = !local.alternance;
+    local.alternance = v;
+    $("ctl-alternance").classList.toggle("active", v);
+    send("alternance", v);
+  });
+
+  // ── Signal canvas ──
+  const cv = $("sig");
+  const ctx = cv.getContext("2d");
+
+  function fitCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = w * dpr; cv.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  fitCanvas();
+  window.addEventListener("resize", fitCanvas);
+
+  function drawLine(arr, scale, color, glow) {
+    const w = cv.clientWidth, h = cv.clientHeight;
+    ctx.beginPath();
+    ctx.lineWidth = glow ? 1.6 : 1;
+    ctx.strokeStyle = color;
+    if (glow) {
+      ctx.shadowColor = "rgba(168,85,247,0.5)";
+      ctx.shadowBlur = 8;
+    } else {
+      ctx.shadowBlur = 0;
+    }
+    for (let i = 0; i < N; i++) {
+      const idx = (head + i) % N;
+      const v = arr[idx] * scale;
+      const x = (i / (N - 1)) * w;
+      const y = h - 6 - Math.max(0, Math.min(1, v)) * (h - 12);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+  }
+
+  function draw() {
+    const w = cv.clientWidth, h = cv.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    // grid
+    ctx.strokeStyle = "rgba(168,85,247,0.06)";
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 4; i++) {
+      const y = (i / 4) * h;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+    drawLine(buf.ms_step, 1 / 1000, "rgba(110,110,128,0.5)", false);
+    drawLine(buf.sd_fps,  1 / 10,   "rgba(110,163,199,0.7)", false);
+    drawLine(buf.d_mean,  1,        "#a855f7", true);
+  }
+
+  // 10 Hz sampling tick — pushes the latest WS-pushed values into the ring
+  setInterval(() => {
+    buf.d_mean[head]  = last.d_mean;
+    buf.sd_fps[head]  = last.sd_fps;
+    buf.ms_step[head] = last.ms_step;
+    head = (head + 1) % N;
+    draw();
+  }, 100);
+
+  // Uptime tick
+  setInterval(() => {
+    const s = Math.floor((Date.now() - bootedAt) / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    const t = `${mm}:${ss}`;
+    $("uptime").textContent = t;
+    $("topUptime").textContent = t;
+  }, 1000);
+
+  connect();
+})();
+</script>
+</body>
+</html>

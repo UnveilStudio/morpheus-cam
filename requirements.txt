@@ -1,0 +1,27 @@
+# morpheus-cam — runtime dependencies
+#
+# Two conda envs are required (see README "Quickstart"):
+#
+#   1) `npu` — main process: NPU SD Turbo + iGPU TAESD/Depth (DML) + web panel
+#   2) `cuda` — RIFE flow worker (PyTorch CUDA on the dGPU)
+#
+# `onnxruntime-vitisai` and `onnxruntime-directml` are provided by the
+# AMD Ryzen AI 1.7.1 SDK (env.yaml). Do NOT pip install them here — the SDK
+# version pins matching DLLs, and mixing pip wheels into the conda env breaks
+# the VitisAI execution provider.
+#
+# ── env npu ────────────────────────────────────────────────────────────────
+numpy>=1.24
+opencv-python>=4.10
+psutil>=5.9
+websockets>=12.0
+huggingface_hub>=0.24
+# torch is also required (used for noise gen + scheduler tensors).
+# Get it from the Ryzen AI SDK env.yaml — do NOT pip-install a different build.
+
+# ── env cuda (RIFE) ────────────────────────────────────────────────────────
+# torch>=2.4 with CUDA 12.x — install per https://pytorch.org/get-started/locally/
+# numpy>=1.24
+
+# ── optional: SPOUT2ForPython (sister Unveil repo, BSD-2 SpoutLibrary.dll bundled) ──
+# pip install git+https://github.com/UnveilStudio/SPOUT2ForPython
